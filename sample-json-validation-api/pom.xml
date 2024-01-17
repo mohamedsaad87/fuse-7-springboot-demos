@@ -15,8 +15,120 @@
 	<packaging>jar</packaging>
 
 	<name>Sample JSON Validation API</name>
+	
+    <!-- Properties -->
+    <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+		<!-- configure the Fuse version you want to use here -->
+		<fuse.bom.version>7.12.0.fuse-7_12_0-00016-redhat-00001</fuse.bom.version>
+		<builder.image.version>1.12</builder.image.version>
+
+		<!-- Other dependencies versions -->
+		<jsonassert.version>1.5.0</jsonassert.version>
+		<logstash-logback-encoder.version>6.5</logstash-logback-encoder.version>
+		<pooled-jms.version>1.2.1.redhat-00011</pooled-jms.version>
+
+		<!-- Plugin versions -->
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+	</properties>
+<dependencyManagement>
+		<dependencies>
+			<!-- import the Fuse Spring Boot BOM -->
+			<dependency>
+				<groupId>org.jboss.redhat-fuse</groupId>
+				<artifactId>fuse-springboot-bom</artifactId>
+				<version>${fuse.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
+				<!-- Enabling health checks -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!-- Camel -->
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<!-- Disable embedded tomcat web server -->
+	            <exclusion>
+	                <groupId>org.springframework.boot</groupId>
+	                <artifactId>spring-boot-starter-tomcat</artifactId>
+	            </exclusion>
+	        </exclusions>
+		</dependency>
+		<!-- Enable embedded undertow web server -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+		
+		<!-- Spring-cloud-kubernetes -->
+		<!-- This only works with Red Hat Fuse SB-1 
+			dependency>
+			<groupId>io.fabric8</groupId>
+			<artifactId>spring-cloud-kubernetes-core</artifactId>
+		</dependency -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-kubernetes-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>openshift-client</artifactId>
+        </dependency>
+
+		<!-- For JSON logging -->
+	    <dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>${logstash-logback-encoder.version}</version>
+	    </dependency>
+
+		<!-- testing -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-test-spring</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.skyscreamer</groupId>
+		    <artifactId>jsonassert</artifactId>
+		    <version>${jsonassert.version}</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.arquillian.cube</groupId>
+            <artifactId>arquillian-cube-openshift</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
 		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -37,13 +149,85 @@
 		
 		<!-- Common demo resources
 			 The dependency version range includes only 1.x.x latest version -->
-	    <dependency>
-	    	<groupId>com.github.jeannyil.fuse</groupId>
-	    	<artifactId>fuse-common-resources</artifactId>
-	    	<version>[2.0.0,3.0.0)</version>
-		</dependency>
+
 	</dependencies>
-	
+	    <!-- Repositories -->
+    <repositories>
+		<repository>
+			<id>maven.central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</repository>
+		<repository>
+			<id>red-hat-ga-repository</id>
+			<name>Red Hat GA Repository</name>
+			<url>https://maven.repository.redhat.com/ga</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>red-hat-ea-repository</id>
+			<name>Red Hat EA Repository</name>
+			<url>https://maven.repository.redhat.com/earlyaccess/all</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+		<pluginRepositories>
+		<pluginRepository>
+			<id>maven.central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+		</pluginRepository>
+		<pluginRepository>
+			<id>red-hat-ga-repository</id>
+			<name>Red Hat GA Repository</name>
+			<url>https://maven.repository.redhat.com/ga</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>red-hat-ea-repository</id>
+			<name>Red Hat EA Repository</name>
+			<url>https://maven.repository.redhat.com/earlyaccess/all</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 	<build>
 		<defaultGoal>spring-boot:run</defaultGoal>
 		
@@ -99,5 +283,114 @@
 
 		</plugins>
 	</build>
+		<profiles>
+        <profile>
+            <id>openshift</id>
+            <properties>
+                <jkube.generator.from>registry.redhat.io/fuse7/fuse-java-openshift:${builder.image.version}</jkube.generator.from>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.redhat-fuse</groupId>
+                        <artifactId>openshift-maven-plugin</artifactId>
+                        <version>${fuse.bom.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>resource</goal>
+                                    <goal>build</goal>
+                                    <goal>apply</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <resources>
+                                <labels>
+									<pod>
+										<property>
+										<name>com.company</name>
+										<value>Red_Hat</value>
+										</property>
+										<property>
+										<name>rht.prod_name</name>
+										<value>Red_Hat_Integration</value>
+										</property>
+										<property>
+										<name>rht.prod_ver</name>
+										<value>7.9</value>
+										</property>
+										<property>
+										<name>rht.comp</name>
+										<value>spring-boot-camel-amq</value>
+										</property>
+										<property>
+										<name>rht.comp_ver</name>
+										<value>${fuse.bom.version}</value>
+										</property>
+									</pod>
+                                </labels>
+                            </resources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>java11</id>
+            <properties>
+                <jkube.generator.from>registry.redhat.io/fuse7/fuse-java-openshift-jdk11-rhel8:${builder.image.version}</jkube.generator.from>
+            </properties>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+			<build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.redhat-fuse</groupId>
+                        <artifactId>openshift-maven-plugin</artifactId>
+                        <version>${fuse.bom.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>resource</goal>
+                                    <goal>build</goal>
+                                    <goal>apply</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <resources>
+                                <labels>
+									<pod>
+										<property>
+										<name>com.company</name>
+										<value>Red_Hat</value>
+										</property>
+										<property>
+										<name>rht.prod_name</name>
+										<value>Red_Hat_Integration</value>
+										</property>
+										<property>
+										<name>rht.prod_ver</name>
+										<value>7.9</value>
+										</property>
+										<property>
+										<name>rht.comp</name>
+										<value>spring-boot-camel-amq</value>
+										</property>
+										<property>
+										<name>rht.comp_ver</name>
+										<value>${fuse.bom.version}</value>
+										</property>
+									</pod>
+                                </labels>
+                            </resources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 	
 </project>
