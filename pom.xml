@@ -23,8 +23,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- configure the Fuse version you want to use here -->
-		<fuse.bom.version>7.9.0.fuse-sb2-790065-redhat-00001</fuse.bom.version>
-		<builder.image.version>1.9</builder.image.version>
+		<fuse.bom.version>7.11.0.fuse-sb2-7_11_0-00028-redhat-00001</fuse.bom.version>
+		<builder.image.version>1.11</builder.image.version>
 
 		<!-- Other dependencies versions -->
 		<jsonassert.version>1.5.0</jsonassert.version>
